@@ -5,6 +5,8 @@ declare(strict_types=1);
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
  *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,8 +26,9 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithmsTest\Lists\LinkedLists;
+namespace doganoo\PHPAlgorithmsTest\Lists\LinkedList;
 
+use doganoo\PHPAlgorithms\Datastructure\Lists\LinkedList\SinglyLinkedList;
 use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
 use doganoo\PHPAlgorithmsTest\Util\LinkedListUtil;
 use PHPUnit\Framework\TestCase;
@@ -70,6 +73,39 @@ class DoublyLinkedListTest extends TestCase {
         $this->assertTrue($value instanceof stdClass);
     }
 
+    public function testPartition() {
+        $list   = LinkedListUtil::createDoublyLinkedListFromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        $result = $list->partition(5);
+
+        $this->assertTrue($result->size() === 2);
+
+        $lower = $result->get('lower');
+
+        $i = 0;
+        /**
+         * @var int  $key
+         * @var Node $value
+         */
+        foreach ($lower as $key => $value) {
+            $this->assertTrue($i === $key);
+            $this->assertTrue($i === $value->getValue());
+            $i++;
+        }
+
+        $upper = $result->get('upper');
+
+        /**
+         * @var int  $key
+         * @var Node $value
+         */
+        foreach ($upper as $key => $value) {
+            $this->assertTrue($i === $key);
+            $this->assertTrue($i === $value->getValue());
+            $i++;
+        }
+
+    }
+
     /**
      * tests setting the head to a new value
      */
@@ -104,6 +140,43 @@ class DoublyLinkedListTest extends TestCase {
         $list->add(4, 1);
         $list->removeDuplicates();
         $this->assertTrue($list->size() === 3);
+    }
+
+    public function testIterator() {
+        $list = new SinglyLinkedList();
+        $list->add(1, 1);
+        $list->add(2, 2);
+        $list->add(3, 3);
+        $list->add(4, 4);
+
+        $i = 1;
+        /**
+         * @var int  $key
+         * @var Node $value
+         */
+        foreach ($list as $key => $value) {
+            $this->assertTrue($i === $key);
+            $this->assertTrue($i === $value->getValue());
+            $i++;
+        }
+
+        $list = new SinglyLinkedList();
+        $list->add(null, 1);
+        $list->add(null, 2);
+        $list->add(null, 3);
+        $list->add(null, 4);
+
+        $i = 1;
+        /**
+         * @var int  $key
+         * @var Node $value
+         */
+        foreach ($list as $key => $value) {
+            $this->assertTrue($list->size() + $i === $key);
+            $this->assertTrue($i === $value->getValue());
+            $i++;
+        }
+
     }
 
     /**

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -26,7 +27,9 @@
 namespace doganoo\PHPAlgorithms\Datastructure\Stackqueue;
 
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
-
+use JsonSerializable;
+use function array_diff;
+use function count;
 
 /**
  * PHP implementation of a Queue
@@ -41,10 +44,11 @@ use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
  *
  * @package StackQueue
  */
-class Queue implements IComparable, \JsonSerializable {
+class Queue implements IComparable, JsonSerializable {
+
     private $queue = [];
-    private $head = 0;
-    private $tail = 0;
+    private $head  = 0;
+    private $tail  = 0;
 
     /**
      * this methods adds an item to the queue to the last index
@@ -67,13 +71,12 @@ class Queue implements IComparable, \JsonSerializable {
      */
     protected function isValid(): bool {
         return $this->queue !== null;
-
     }
 
     /**
      * this method removes the first element from the queue and returns it
      *
-     * @return int
+     * @return mixed|null
      */
     public function dequeue() {
         if (null === $this->queue) return null;
@@ -86,7 +89,7 @@ class Queue implements IComparable, \JsonSerializable {
     /**
      * returns the first element from the queue
      *
-     * @return int
+     * @return mixed|null
      */
     public function front() {
         if (null === $this->queue) return null;
@@ -97,7 +100,7 @@ class Queue implements IComparable, \JsonSerializable {
     /**
      * returns the last item from the queue
      *
-     * @return int
+     * @return mixed|null
      */
     public function rear() {
         if (null === $this->queue) return null;
@@ -125,42 +128,32 @@ class Queue implements IComparable, \JsonSerializable {
     }
 
     /**
-     * stores the number of items of the queue to the size member of this class and returns it
-     *
-     * @return int
-     * @deprecated
-     */
-    public function queueSize(): int {
-        if ($this->tail > $this->head) return 0;
-        return $this->head - $this->tail;
-    }
-
-    /**
      * @param $object
      * @return int
      */
     public function compareTo($object): int {
         if ($object instanceof Queue) {
-            if (\count(\array_diff($this->queue, $object->queue)) === 0) return 0;
-            if (\count($this->queue) < \count($object->queue)) return -1;
-            if (\count($this->queue) > \count($object->queue)) return 1;
+            if (count(array_diff($this->queue, $object->queue)) === 0) return IComparable::EQUAL;
+            if (count($this->queue) < count($object->queue)) return IComparable::IS_LESS;
+            if (count($this->queue) > count($object->queue)) return IComparable::IS_GREATER;
         }
-        return -1;
+        return IComparable::IS_LESS;
     }
 
     /**
      * Specify data which should be serialized to JSON
      *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
     public function jsonSerialize() {
         return [
-            "queue" => $this->queue
+            "queue"  => $this->queue
             , "head" => $this->head
-            , "tail" => $this->tail,
+            , "tail" => $this->tail
         ];
     }
+
 }

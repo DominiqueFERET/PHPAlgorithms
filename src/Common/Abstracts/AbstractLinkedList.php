@@ -26,13 +26,17 @@ declare(strict_types=1);
 
 namespace doganoo\PHPAlgorithms\Common\Abstracts;
 
+use doganoo\PHPAlgorithms\Common\Exception\InvalidKeyTypeException;
+use doganoo\PHPAlgorithms\Common\Exception\UnsupportedKeyTypeException;
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
 use doganoo\PHPAlgorithms\Common\Interfaces\INode;
 use doganoo\PHPAlgorithms\Common\Interfaces\IUnaryNode;
+use doganoo\PHPAlgorithms\Common\Iterator\LinkedListIterator;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
 use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
+use doganoo\PHPAlgorithms\Datastructure\Table\HashTable;
+use IteratorAggregate;
 use JsonSerializable;
-
 
 /**
  * Class LinkedList
@@ -46,48 +50,14 @@ use JsonSerializable;
  * Linked lists are a necessary data structure, since they give you dynamic memory allocation with less danger of buffer overruns. Which means you had to write linked lists by hand. Which means you had to manipulate the pointers in linked lists by hand.
  *
  */
-abstract class AbstractLinkedList implements IComparable, JsonSerializable {
+abstract class AbstractLinkedList
+    implements
+    IComparable
+    , JsonSerializable
+    , IteratorAggregate {
 
     /** @var Node */
     private $head = null;
-
-    /**
-     * there are three pointers needed in order to reverse a
-     * list:
-     *
-     * 1. the previous one, which is initialized to null
-     * 2. the next one, which is initialized to null
-     * 3. the current which is the head
-     *
-     * at the end of this operation, $previous will contain the reversed
-     * list as we append all $prev instances to $current and then
-     * set $current equal to $prev.
-     * $next servers as a temporary instance in order to ensure the
-     * head is not lost.
-     *
-     * suppose we have the following list: 1 -> 2 -> 3 -> 4 -> 5 -> NULL
-     *
-     *          1. NULL <- 1 -> 2 -> 3 -> 4 -> 5
-     *          2. NULL <- 1 <- 2 -> 3 -> 4 -> 5
-     *          3. NULL <- 1 <- 2 <- 3 -> 4 -> 5
-     *          4. NULL <- 1 <- 2 <- 3 <- 4 -> 5
-     *          5. NULL <- 1 <- 2 <- 3 <- 4 <- 5
-     *          ================================
-     *             5 -> 4 -> 3 -> 2 -> 1 -> NULL
-     */
-    public function reverse() {
-        $prev    = null;
-        $next    = null;
-        $current = $this->getHead();
-
-        while ($current !== null) {
-            $next = $current->getNext();
-            $current->setNext($prev);
-            $prev    = $current;
-            $current = $next;
-        }
-        $this->setHead($prev);
-    }
 
     /**
      * returns the head node or null, if no head is set
@@ -103,117 +73,9 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
      *
      * @param Node|null $node
      */
-    public function setHead(?Node $node) {
+    public function setHead(?Node $node): void {
         $this->head = $node;
     }
-
-    /**
-     * There are 3 basic steps to delete a node from a list:
-     *
-     *          1.  check if head is null and return if this is the case
-     *          2.  check if the value of head equals to the node that should
-     *              be deleted. If so, set head to head->next and return.
-     *          3.  iterate over head, check if the value of next equals to
-     *              the node that should be deleted and set head->next to
-     *              head->next->next if this is the case.
-     *
-     * @param  $data
-     * @return bool
-     */
-    public function deleteNode($data): bool {
-        if ($this->getHead() === null) {
-            return false;
-        }
-        $head = $this->getHead();
-
-        if ($head->getValue() == $data) {
-            if ($head->getNext() !== null) {
-                $this->setHead($head->getNext());
-                return true;
-            }
-        }
-
-        while ($head->getNext() !== null) {
-            if ($head->getNext()->getValue() == $data) {
-                $head->setNext($head->getNext()->getNext());
-                return true;
-            }
-            $head = $head->getNext();
-        }
-        return false;
-    }
-
-    /**
-     * The method uses the runner technique in order to iterate over
-     * head twice. If the list contains duplicates, the next-next is set
-     * as the next node of the current node.
-     */
-    public function removeDuplicates() {
-        $tortoise = $this->head;
-
-        while ($tortoise !== null) {
-            $hare = $tortoise;
-            while ($hare->getNext() !== null) {
-                if (Comparator::equals($hare->getNext()->getValue(), $tortoise->getValue())) {
-                    $hare->setNext($hare->getNext()->getNext());
-                } else {
-                    $hare = $hare->getNext();
-                }
-            }
-            $tortoise = $tortoise->getNext();
-        }
-    }
-
-    /**
-     * all nodes from k to the end of the list is requested by this method.
-     * In order to ensure this, we need to do the following steps:
-     *
-     *          1.  create two pointers $p1 and $p2
-     *          2.  loop from 0 to k and set $p1 = $p1->next
-     *          3.  if $p1 reaches null when the loop is looping,
-     *              return null. This means, that k > list->size and
-     *              there are no nodes to return.
-     *          4.  iterate over $p1 until it is null. Within the loop,
-     *              set $p1 = $p1->next and $p2 = $p2->next. When the loop
-     *              ends, $p2 points to the kth element of the list.
-     *          5.  iterate over p2 and add all nodes to the list.
-     *          6.  return the list.
-     *
-     * @param int $number
-     * @return AbstractLinkedList|null
-     *
-     */
-    public function getLastElements(int $number): AbstractLinkedList {
-        $p1     = $this->getHead();
-        $p2     = $this->getHead();
-        $number = $number > $this->head->size() ? $this->head->size() : $number;
-        $list   = $this->getEmptyInstance();
-
-        for ($i = 0; $i < $number; $i++) {
-            if ($p1 == null) {
-                return null;
-            }
-            $p1 = $p1->getNext();
-        }
-
-        while ($p1 !== null) {
-            $p1 = $p1->getNext();
-            $p2 = $p2->getNext();
-        }
-        while ($p2 !== null) {
-            $list->append($p2);
-            $p2 = $p2->getNext();
-        }
-
-        return $list;
-    }
-
-    /**
-     * abstract method that requires inheritors to return their type
-     *
-     * @return AbstractLinkedList
-     */
-    protected abstract function getEmptyInstance(): AbstractLinkedList;
 
     /**
      * abstract method that requires inheritors to implement the way how
@@ -224,47 +86,6 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
      */
     public abstract function append(?Node $node): bool;
 
-    ////This problem cannot be solved if the node to be deleted is
-    ////the last node in the linked list
-    ////node could be marked as dummy
-    // TODO transfer to Node class
-    //public function deleteGivenNode(Node $node) {
-    //    if ($node == null || $node->getNext() == null) {
-    //        return null;
-    //    }
-    //    /**
-    //     * a given node should be deleted from itself.
-    //     * To do this, we simply take the next instance and
-    //     * append it to the actual one
-    //     */
-    //    $tmp = $node->getNext();
-    //    $node->setValue($tmp->getValue());
-    //    $node->setNext($tmp->getNext());
-    //    return $node;
-    //}
-
-    /**
-     * iterates $number times over the head and returns a list that
-     * contains $number elements
-     *
-     * @param int $number
-     * @return AbstractLinkedList
-     */
-    public function getFirstElements(int $number): AbstractLinkedList {
-        $head = $this->getHead();
-        //if there are more elements requested than the list provides
-        $number = $number > $head->size() ? $head->size() : $number;
-        $list   = $this->getEmptyInstance();
-        $i      = 0;
-        while ($i < $number) {
-            //TODO append or prepend?
-            $list->append($head);
-            $head = $head->getNext();
-            $i++;
-        }
-        return $list;
-    }
-
     /**
      * abstract method that requires inheritors to implement the way how
      * values are prepended to the list
@@ -273,26 +94,6 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
      * @return bool
      */
     public abstract function prepend(?Node $node): bool;
-
-    //TODO FIXME partition works actually only for singly linked lists
-    //public function partition(int $value) {
-    //    $head = $this->getHead();
-    //    $list = $this->getEmptyInstance();
-    //    $i = 0;
-    //    while ($head !== null) {
-    //        $node = new Node();
-    //        $node->setKey($head->getKey());
-    //        $node->setValue($head->getValue());
-    //        if ($head->getValue() < $value) {
-    //            $list->prepend($node);
-    //        } else {
-    //            $list->append($node);
-    //        }
-    //        $head = $head->getNext();
-    //        $i++;
-    //    }
-    //    return $list;
-    //}
 
     /**
      * adds a Node instance to the list
@@ -397,6 +198,169 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
     }
 
     /**
+     * There are 3 basic steps to delete a node from a list:
+     *
+     *          1.  check if head is null and return if this is the case
+     *          2.  check if the value of head equals to the node that should
+     *              be deleted. If so, set head to head->next and return.
+     *          3.  iterate over head, check if the value of next equals to
+     *              the node that should be deleted and set head->next to
+     *              head->next->next if this is the case.
+     *
+     * @param  $data
+     * @return bool
+     */
+    public function deleteNode($data): bool {
+        if ($this->getHead() === null) {
+            return false;
+        }
+        $head = $this->getHead();
+
+        if ($head->getValue() == $data) {
+            if ($head->getNext() !== null) {
+                $this->setHead($head->getNext());
+                return true;
+            }
+        }
+
+        while ($head->getNext() !== null) {
+            if ($head->getNext()->getValue() == $data) {
+                $head->setNext($head->getNext()->getNext());
+                return true;
+            }
+            $head = $head->getNext();
+        }
+        return false;
+    }
+
+    /**
+     * The method uses the runner technique in order to iterate over
+     * head twice. If the list contains duplicates, the next-next is set
+     * as the next node of the current node.
+     */
+    public function removeDuplicates(): void {
+        $tortoise = $this->head;
+
+        while (null !== $tortoise) {
+            $hare = $tortoise;
+            while (null !== $hare->getNext()) {
+                if (Comparator::equals($hare->getNext()->getValue(), $tortoise->getValue())) {
+                    $hare->setNext($hare->getNext()->getNext());
+                } else {
+                    $hare = $hare->getNext();
+                }
+            }
+            $tortoise = $tortoise->getNext();
+        }
+
+    }
+
+    /**
+     * all nodes from k to the end of the list is requested by this method.
+     * In order to ensure this, we need to do the following steps:
+     *
+     *          1.  create two pointers $p1 and $p2
+     *          2.  loop from 0 to k and set $p1 = $p1->next
+     *          3.  if $p1 reaches null when the loop is looping,
+     *              return null. This means, that k > list->size and
+     *              there are no nodes to return.
+     *          4.  iterate over $p1 until it is null. Within the loop,
+     *              set $p1 = $p1->next and $p2 = $p2->next. When the loop
+     *              ends, $p2 points to the kth element of the list.
+     *          5.  iterate over p2 and add all nodes to the list.
+     *          6.  return the list.
+     *
+     * @param int $number
+     * @return AbstractLinkedList|null
+     *
+     */
+    public function getLastElements(int $number): ?AbstractLinkedList {
+        $p1     = $this->getHead();
+        $p2     = $this->getHead();
+        $number = $number > $this->head->size() ? $this->head->size() : $number;
+        $list   = new static();
+
+        for ($i = 0; $i < $number; $i++) {
+            if ($p1 == null) {
+                return null;
+            }
+            $p1 = $p1->getNext();
+        }
+
+        while ($p1 !== null) {
+            $p1 = $p1->getNext();
+            $p2 = $p2->getNext();
+        }
+        while ($p2 !== null) {
+            $list->append($p2);
+            $p2 = $p2->getNext();
+        }
+
+        return $list;
+    }
+
+    /**
+     * iterates $number times over the head and returns a list that
+     * contains $number elements
+     *
+     * @param int $number
+     * @return AbstractLinkedList
+     */
+    public function getFirstElements(int $number): AbstractLinkedList {
+        $head = $this->getHead();
+        //if there are more elements requested than the list provides
+        $number = $number > $head->size() ? $head->size() : $number;
+        $list   = new static();
+        $i      = 0;
+        while ($i < $number) {
+            //TODO append or prepend?
+            $list->append($head);
+            $head = $head->getNext();
+            $i++;
+        }
+        return $list;
+    }
+
+    /**
+     * @param $value
+     * @return HashTable
+     * @throws InvalidKeyTypeException
+     * @throws UnsupportedKeyTypeException
+     */
+    public function partition($value): HashTable {
+        $result = new HashTable();
+        $head   = $this->getHead();
+        $lower  = new static();
+        $upper  = new static();
+
+        if (null === $head) {
+            return $result;
+        }
+
+        while (null !== $head) {
+
+            $n = new Node();
+            $n->setKey($head->getKey());
+            $n->setValue($head->getValue());
+            $n->setNext(null);
+            $n->setPrevious(null);
+
+            if (Comparator::lessThan($head->getValue(), $value)) {
+                $lower->append($n);
+            } else {
+                $upper->append($n);
+            }
+
+            $head = $head->getNext();
+        }
+
+        $result->put('lower', $lower);
+        $result->put('upper', $upper);
+
+        return $result;
+    }
+
+    /**
      * removes a node from the list by a given key
      *
      * @param $key
@@ -423,7 +387,7 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
          * The while loop iterates over all nodes until the
          * value is found.
          */
-        while ($head !== null && Comparator::notEquals($head->getKey(), $key)) {
+        while (null !== $head && Comparator::notEquals($head->getKey(), $key)) {
             /*
              * since a node is going to be removed from the
              * node chain, the previous element has to be
@@ -467,7 +431,7 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
     public function replaceValue($key, $value): bool {
         $replaced = false;
         $node     = $this->getHead();
-        while ($node !== null) {
+        while (null !== $node) {
             if (Comparator::equals($node->getKey(), $key)) {
                 $node->setValue($value);
                 $replaced = true;
@@ -483,11 +447,11 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
      */
     public function compareTo($object): int {
         if ($object instanceof AbstractLinkedList) {
-            if (Comparator::equals($this->getHead(), $object->getHead())) return 0;
-            if (Comparator::lessThan($this->getHead(), $object->getHead())) return -1;
-            if (Comparator::greaterThan($this->getHead(), $object->getHead())) return 1;
+            if (Comparator::equals($this->getHead(), $object->getHead())) return IComparable::EQUAL;
+            if (Comparator::lessThan($this->getHead(), $object->getHead())) return IComparable::IS_LESS;
+            if (Comparator::greaterThan($this->getHead(), $object->getHead())) return IComparable::IS_GREATER;
         }
-        return -1;
+        return IComparable::IS_LESS;
     }
 
     /**
@@ -573,6 +537,9 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
 
 
         while (null !== $l1 && null !== $l2) {
+            // we can not use the identity operator here
+            // since it requires to be the exact same
+            // instance!
             if ($l1 == $l2) {
                 return $l1;
             }
@@ -584,12 +551,51 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
     }
 
     /**
+     * there are three pointers needed in order to reverse a
+     * list:
+     *
+     * 1. the previous one, which is initialized to null
+     * 2. the next one, which is initialized to null
+     * 3. the current which is the head
+     *
+     * at the end of this operation, $previous will contain the reversed
+     * list as we append all $prev instances to $current and then
+     * set $current equal to $prev.
+     * $next servers as a temporary instance in order to ensure the
+     * head is not lost.
+     *
+     * suppose we have the following list: 1 -> 2 -> 3 -> 4 -> 5 -> NULL
+     *
+     *          1. NULL <- 1 -> 2 -> 3 -> 4 -> 5
+     *          2. NULL <- 1 <- 2 -> 3 -> 4 -> 5
+     *          3. NULL <- 1 <- 2 <- 3 -> 4 -> 5
+     *          4. NULL <- 1 <- 2 <- 3 <- 4 -> 5
+     *          5. NULL <- 1 <- 2 <- 3 <- 4 <- 5
+     *          ================================
+     *             5 -> 4 -> 3 -> 2 -> 1 -> NULL
+     */
+    public function reverse(): void {
+        $current = $this->getHead();
+        $prev    = null;
+        $next    = null;
+
+        while ($current !== null) {
+            $next = $current->getNext();
+            $current->setNext($prev);
+            $prev    = $current;
+            $current = $next;
+        }
+
+        $this->setHead($prev);
+    }
+
+    /**
      * returns the number of elements in a list
      *
      * @return int
      */
     public function size() {
-        if ($this->isEmpty()) {
+        if (true === $this->isEmpty()) {
             return 0;
         }
         return $this->head->size();
@@ -605,6 +611,13 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getIterator() {
+        return new LinkedListIterator($this);
+    }
+
+    /**
      * Specify data which should be serialized to JSON
      *
      * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
@@ -614,24 +627,11 @@ abstract class AbstractLinkedList implements IComparable, JsonSerializable {
      */
     public function jsonSerialize() {
         return [
-            "head" => $this->head,
+            "head"       => $this->getHead()
+            , "size"     => $this->size()
+            , "is_empty" => $this->isEmpty()
+            , "has_loop" => $this->hasLoop()
         ];
     }
 
-    //TODO implement
-    //protected function removeDuplicates() {
-    //    $node = $this->head;
-    //    $previous = $this->head;
-    //    $visited = [];
-    //
-    //    while ($node !== null) {
-    //        if (in_array($node->getValue(), $visited)) {
-    //            $previous->setNext($node->getNext());
-    //        } else {
-    //            $visited[] = $node->getValue();
-    //            $previous = $node;
-    //        }
-    //        $node = $node->getNext();
-    //    }
-    //}
 }

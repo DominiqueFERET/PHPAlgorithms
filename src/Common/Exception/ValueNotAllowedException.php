@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ * Copyright (c) 2018 Dogan Ucar
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +23,12 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithmsTest\Util;
-
-use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
-use doganoo\PHPAlgorithms\Datastructure\Maps\HashMap;
+namespace doganoo\PHPAlgorithms\Common\Exception;
 
 /**
- * Class HashMapUtil - utility class for testing hash maps
+ * Class ValueNotAllowedException
+ * @package doganoo\PHPAlgorithms\Common\Exception
  */
-class HashMapUtil {
-
-    /**
-     * HashMapUtil constructor is private in order to ensure that the class is not instantiable.
-     */
-    public function __construct() {
-    }
-
-    /**
-     * creates a hash map with $number elements
-     *
-     * @param int $number
-     * @return HashMap
-     * @throws \doganoo\PHPAlgorithms\common\Exception\InvalidKeyTypeException
-     * @throws \doganoo\PHPAlgorithms\common\Exception\UnsupportedKeyTypeException
-     */
-    public static function getHashMap(int $number) {
-        $hashMap = new HashMap();
-        for ($i = 0; $i < $number; $i++) {
-            $node = new Node();
-            $node->setKey($i);
-            $node->setValue(md5((string) $i));
-            $hashMap->addNode($node);
-        }
-        return $hashMap;
-    }
+class ValueNotAllowedException extends PHPAlgorithmsException {
 
 }

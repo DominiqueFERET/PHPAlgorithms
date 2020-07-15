@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar
+ *
+ * @author Alexey Berezuev <alexey@berezuev.ru>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +28,10 @@
 
 namespace doganoo\PHPAlgorithms\Algorithm\Sorting;
 
-
 use doganoo\PHPAlgorithms\Common\Interfaces\ISortable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
+use function array_values;
+use function count;
 
 /**
  * Class QuickSort
@@ -35,20 +39,21 @@ use doganoo\PHPAlgorithms\Common\Util\Comparator;
  * @package doganoo\PHPAlgorithms\Sorting
  */
 class QuickSort implements ISortable {
+
     /**
      * @param array $array
      * @return array
      */
     public function sort(array $array): array {
-        $array = \array_values($array);
-        $size = \count($array);
+        $array = array_values($array);
+        $size  = count($array);
 
-        if ($size <= 1) return $array;
+        if (0 === $size || 1 === $size) return $array;
 
         $pivot = $array[0];
-        $left = $right = [];
+        $left  = $right = [];
 
-        for ($i = 1; $i < count($array); $i++) {
+        for ($i = 1; $i < $size; $i++) {
             if (Comparator::lessThan($array[$i], $pivot)) {
                 $left[] = $array[$i];
             } else {

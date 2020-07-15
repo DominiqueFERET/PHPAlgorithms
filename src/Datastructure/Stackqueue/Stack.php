@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -27,7 +28,9 @@ namespace doganoo\PHPAlgorithms\Datastructure\Stackqueue;
 
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
-
+use JsonSerializable;
+use function array_diff;
+use function count;
 
 /**
  * PHP implementation of a stack.
@@ -53,8 +56,9 @@ use doganoo\PHPAlgorithms\Common\Util\Comparator;
  *
  * @package StackQueue
  */
-class Stack implements IComparable, \JsonSerializable {
-    public const ASCENDING = 1;
+class Stack implements IComparable, JsonSerializable {
+
+    public const ASCENDING  = 1;
     public const DESCENDING = 2;
     /**
      * The stack is represented as an array. Note that a stack can also be implemented using a linked list.
@@ -79,8 +83,10 @@ class Stack implements IComparable, \JsonSerializable {
             while ((!$r->isEmpty()) && (Comparator::lessThan($r->peek(), $tmp))) {
                 $this->push($r->pop());
             }
+
             $r->push($tmp);
         }
+
         while (!$r->isEmpty()) {
             $this->push($r->pop());
         }
@@ -96,38 +102,28 @@ class Stack implements IComparable, \JsonSerializable {
     }
 
     /**
-     * stores the number of items in the stack to the size member of this class and returns it
-     *
-     * @return int
-     * @deprecated
-     */
-    public function stackSize(): int {
-        return $this->size;
-    }
-
-    /**
      * pop() removes an item from the top of the stack.
      *
+     * @return mixed|null
      */
     public function pop() {
         if (null === $this->stack) return null;
         if ($this->isEmpty()) return null;
 
         $this->size--;
-        $value = $this->stack[$this->size];
-        return $value;
+        return $this->stack[$this->size];
     }
 
     /**
      * peek() returns the element 'on top' of the stack
      *
+     * @return mixed|null
      */
     public function peek() {
         if (null === $this->stack) return null;
         if ($this->isEmpty()) return null;
 
-        $value = $this->stack[$this->size];
-        return $value;
+        return $this->stack[$this->size];
     }
 
     /**
@@ -168,25 +164,26 @@ class Stack implements IComparable, \JsonSerializable {
      */
     public function compareTo($object): int {
         if ($object instanceof Stack) {
-            if (\count(\array_diff($this->stack, $object->stack)) === 0) return 0;
-            if (\count($this->stack) < \count($object->stack)) return -1;
-            if (\count($this->stack) > \count($object->stack)) return 1;
+            if (count(array_diff($this->stack, $object->stack)) === 0) return IComparable::EQUAL;
+            if (count($this->stack) < count($object->stack)) return IComparable::IS_LESS;
+            if (count($this->stack) > count($object->stack)) return IComparable::IS_GREATER;
         }
-        return -1;
+        return IComparable::IS_LESS;
     }
 
     /**
      * Specify data which should be serialized to JSON
      *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
      */
     public function jsonSerialize() {
         return [
-            "stack" => $this->stack,
-            "size" => $this->size,
+            "stack"  => $this->stack
+            , "size" => $this->size
         ];
     }
+
 }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -25,9 +26,10 @@
 
 namespace doganoo\PHPAlgorithms\Algorithm\Sorting;
 
-
 use doganoo\PHPAlgorithms\Common\Interfaces\ISortable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
+use function array_values;
+use function count;
 
 /**
  * Class BubbleSort
@@ -41,21 +43,21 @@ class BubbleSort implements ISortable {
      * @return array
      */
     public function sort(array $array): array {
-        $array = \array_values($array);
-        $size = \count($array);
+        $array = array_values($array);
+        $size  = count($array);
 
-        if (0 === $size) return [];
-        if (1 === $size) return $array;
+        if (0 === $size || 1 === $size) return $array;
 
         for ($i = 0; $i < $size; $i++) {
             for ($j = 0; $j < $size - $i - 1; $j++) {
                 if (Comparator::greaterThan($array[$j], $array[$j + 1])) {
-                    $tmp = $array[$j];
-                    $array[$j] = $array[$j + 1];
+                    $tmp           = $array[$j];
+                    $array[$j]     = $array[$j + 1];
                     $array[$j + 1] = $tmp;
                 }
             }
         }
         return $array;
     }
+
 }

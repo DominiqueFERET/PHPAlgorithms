@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +26,39 @@
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithms\Common\Interfaces;
+namespace doganoo\PHPAlgorithmsTest\Map;
+
+use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Interface Comparable
- *
- * @package doganoo\PHPAlgorithms\common\Interfaces
- * @deprecated use IComparable instead (due to name conventions)
+ * Class NodeTest PHPUnit test class
  */
-interface Comparable {
+class NodeTest extends TestCase {
+
     /**
-     * @param $object
-     * @return int
+     * tests node assignments
      */
-    public function compareTo($object): int;
+    public function testNodeReference() {
+        $a = new Node();
+        $a->setKey(1);
+        $a->setValue("1");
+
+        $b = new Node();
+        $b->setKey(2);
+        $b->setValue("2");
+
+        $c = new Node();
+        $c->setKey(3);
+        $c->setValue("3");
+
+        $b->setNext($c);
+        $a->setNext($b);
+
+        $d = $a;
+        $d = $d->getNext();
+        $this->assertTrue($d->size() == 2);
+        $this->assertTrue($a->size() == 3);
+    }
+
 }

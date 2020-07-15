@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ * Copyright (c) 2018 Dogan Ucar
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +23,12 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithmsTest\Maps;
-
-use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
-use PHPUnit\Framework\TestCase;
+namespace doganoo\PHPAlgorithms\Common\Exception;
 
 /**
- * Class NodeTest PHPUnit test class
+ * Class NullNotAllowedException
+ * @package doganoo\PHPAlgorithms\Common\Exception
  */
-class NodeTest extends TestCase {
-
-    /**
-     * tests node assignments
-     */
-    public function testNodeReference() {
-        $a = new Node();
-        $a->setKey(1);
-        $a->setValue("1");
-
-        $b = new Node();
-        $b->setKey(2);
-        $b->setValue("2");
-
-        $c = new Node();
-        $c->setKey(3);
-        $c->setValue("3");
-
-        $b->setNext($c);
-        $a->setNext($b);
-
-        $d = $a;
-        $d = $d->getNext();
-        $this->assertTrue($d->size() == 2);
-        $this->assertTrue($a->size() == 3);
-    }
+class NullNotAllowedException extends PHPAlgorithmsException {
 
 }

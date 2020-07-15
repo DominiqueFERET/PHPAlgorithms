@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,88 +26,67 @@
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithms\Datastructure\Lists\LinkedLists;
-
+namespace doganoo\PHPAlgorithms\Datastructure\Lists\LinkedList;
 
 use doganoo\PHPAlgorithms\Common\Abstracts\AbstractLinkedList;
 use doganoo\PHPAlgorithms\Datastructure\Lists\Node;
+use Exception;
+use Traversable;
 
 /**
- * Class DoublyLinkedList
+ * Class SinglyLinkedList
  *
- * @package doganoo\PHPAlgorithms\LinkedLists
+ * @package doganoo\PHPAlgorithms\LinkedList
  */
-class DoublyLinkedList extends AbstractLinkedList {
+class SinglyLinkedList extends AbstractLinkedList {
+
+    /**
+     * $node is added to the end of the list.
+     * The method checks the following:
+     *
+     *      1.  given node is null. Terminate method and return false
+     *      2.  head equals to null. Set head = $node, terminate and return true
+     *      3.  iterate over temporary node until you have reached the last
+     *          node (iterate until next !== null)
+     *
+     * once you have reached the end, set $node as next of your
+     * temporary node
+     *
+     * @param Node $node
+     * @return bool
+     */
     public function append(?Node $node): bool {
         if ($node === null) {
             return false;
         }
-        /*
-         * need to clone the object otherwise the object
-         * references are going crazy.
-         *
-         * Furthermore, setting previous and next to null
-         * as they will be set later.
-         */
-        $newNode = clone $node;
-        $newNode->setPrevious(null);
-        $newNode->setNext(null);
-
-        if ($this->getHead() === null) {
-            $this->setHead($newNode);
+        $head = $this->getHead();
+        if ($head === null) {
+            $this->setHead($node);
             return true;
         }
-
-        $head = $this->getHead();
-        $i = 0;
         while ($head->getNext() !== null) {
-            if ($i == 10) break;
             $head = $head->getNext();
-            $i++;
         }
-        $newNode->setPrevious($head);
-        $head->setNext($newNode);
+        $head->setNext($node);
         return true;
     }
 
     /**
-     * prepends a node on top of the list
+     * the prepend method simply checks first if the node is still valid.
+     * If it does not equal to null, the next pointer of the new node is
+     * set to head and the head is set to the new node in order to create
+     * the new head.
      *
-     * @param \doganoo\PHPAlgorithms\Datastructure\Lists\Node|null $node
+     * @param Node $node
      * @return bool
      */
     public function prepend(?Node $node): bool {
         if ($node === null) {
             return false;
         }
-        /*
-         * need to clone the object otherwise the object
-         * references are going crazy.
-         *
-         * Furthermore, setting previous and next to null
-         * as they will be set later.
-         */
-        $newNode = clone $node;
-        $newNode->setPrevious(null);
-        $newNode->setNext(null);
-
-        if ($this->getHead() === null) {
-            $this->setHead($newNode);
-            return true;
-        }
-        $head = $this->getHead();
-        $head->setPrevious($newNode);
-        $newNode->setNext($head);
-        $this->setHead($newNode);
+        $node->setNext($this->getHead());
+        $this->setHead($node);
         return true;
     }
 
-    /**
-     * returns a new instance of DoublyLinkedList
-     *
-     * @return AbstractLinkedList
-     */
-    protected function getEmptyInstance(): AbstractLinkedList {
-        return new DoublyLinkedList();
-    }
 }

@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar
+ * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +28,12 @@
 
 namespace doganoo\PHPAlgorithms\Algorithm\Sorting;
 
-
 use doganoo\PHPAlgorithms\Common\Abstracts\AbstractGraph;
 use doganoo\PHPAlgorithms\Common\Exception\InvalidGraphTypeException;
 use doganoo\PHPAlgorithms\Common\Interfaces\IGraphSortable;
 use doganoo\PHPAlgorithms\Datastructure\Graph\Graph\DirectedGraph;
 use doganoo\PHPAlgorithms\Datastructure\Graph\Graph\Node;
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
 use doganoo\PHPAlgorithms\Datastructure\Stackqueue\Stack;
 
 /**
@@ -56,8 +58,8 @@ class TopologicalSort implements IGraphSortable {
             throw new InvalidGraphTypeException("the graph has a cycle. Topological sorting is only possible for directed acyclic graphs");
         }
         $allNodes = $graph->getNodes();
-        $result = new Stack();
-        $visited = new ArrayList();
+        $result   = new Stack();
+        $visited  = new ArrayList();
 
         /*
          * starting with any node, it is first necessary to determine
@@ -102,4 +104,5 @@ class TopologicalSort implements IGraphSortable {
         //add node to result stack
         $result->push($node);
     }
+
 }

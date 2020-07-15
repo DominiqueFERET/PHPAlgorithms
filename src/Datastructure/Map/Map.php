@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +26,21 @@
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithms\Datastructure\Maps;
+namespace doganoo\PHPAlgorithms\Datastructure\Map;
 
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
+use function array_fill;
+use function array_filter;
+use function count;
+use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * Class Map
  *
- * @package doganoo\PHPAlgorithms\Datastructure\maps
+ * @package doganoo\PHPAlgorithms\Datastructure\Map
  */
 class Map {
+
     /** @var int MAX_SIZE */
     public const MAX_SIZE = 128;
 
@@ -50,7 +58,7 @@ class Map {
      * @return bool
      */
     public function clear(): bool {
-        $this->map = \array_fill(0, Map::MAX_SIZE, null);
+        $this->map = array_fill(0, Map::MAX_SIZE, null);
         return true;
     }
 
@@ -66,10 +74,10 @@ class Map {
      * @return int
      */
     public function size(): int {
-        $array = \array_filter($this->map, function ($v, $k) {
+        $array = array_filter($this->map, function ($v, $k) {
             return $v !== null;
-        }, \ARRAY_FILTER_USE_BOTH);
-        return \count($array);
+        }, ARRAY_FILTER_USE_BOTH);
+        return count($array);
     }
 
     /**

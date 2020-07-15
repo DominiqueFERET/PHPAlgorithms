@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +26,24 @@
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists;
+namespace doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList;
 
-
-use function array_diff;
-use function array_fill;
-use function array_filter;
-use const ARRAY_FILTER_USE_BOTH;
-use function array_slice;
-use function array_values;
 use ArrayIterator;
-use function count;
 use doganoo\PHPAlgorithms\Algorithm\Sorting\TimSort;
 use doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException;
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
-use function in_array;
 use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
+use function array_diff;
+use function array_fill;
+use function array_filter;
+use function array_slice;
+use function array_values;
+use function count;
+use function in_array;
+use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * Class ArrayList
@@ -56,9 +58,10 @@ use Traversable;
  *
  * see here: https://gist.github.com/wwsun/71ebbaded68930884746
  *
- * @package doganoo\PHPAlgorithms\Lists\ArrayLists
+ * @package doganoo\PHPAlgorithms\Lists\ArrayList
  */
 class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
+
     /**
      * @const DEFAULT_ARRAY_SIZE
      */
@@ -74,9 +77,16 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     private $size = 0;
 
     /**
-     * ArrayList constructor initializes the array
+     * @var int $capacity the capacity the array may have
      */
-    public function __construct() {
+    private $capacity = 0;
+
+    /**
+     * ArrayList constructor initializes the array.
+     * @param int $capacity
+     */
+    public function __construct(int $capacity = ArrayList::DEFAULT_CAPACITY) {
+        $this->setCapacity($capacity);
         $this->clear();
     }
 
@@ -85,7 +95,9 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
      */
     public function clear() {
         $this->size = 0;
-        $this->ensureCapacity(self::DEFAULT_CAPACITY);
+        $this->ensureCapacity(
+            $this->getCapacity()
+        );
     }
 
     private function ensureCapacity(int $newCapacity): bool {
@@ -93,12 +105,28 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
             return false;
         }
 
-        $array = $this->array;
+        $array       = $this->array;
         $this->array = array_fill(0, $newCapacity, null);
         for ($i = 0; $i < $this->size(); $i++) {
             $this->array[$i] = $array[$i];
         }
         return true;
+    }
+
+    /**
+     * sets the ArrayLists maximum capacity
+     * @param int $capacity
+     */
+    public function setCapacity(int $capacity): void {
+        $this->capacity = $capacity;
+    }
+
+    /**
+     * returns the ArrayLists maximum capacity
+     * @return int
+     */
+    public function getCapacity(): int {
+        return $this->capacity;
     }
 
     /**
@@ -122,7 +150,6 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
             throw new IndexOutOfBoundsException();
         }
         return $this->array[$index];
-
     }
 
     /**
@@ -134,6 +161,11 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
         return $this->length() === 0 || $this->array === null;
     }
 
+    /**
+     * returns the actual length of the array (after stripping out all null values)
+     *
+     * @return int
+     */
     public function length(): int {
         $array = $this->array;
         $array = array_filter($array, function ($value, $key) {
@@ -151,7 +183,8 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     public function removeAll(ArrayList $arrayList): bool {
         $removed = false;
         foreach ($arrayList as $value) {
-            $removed |= $this->removeByValue($value);
+            $valueRemoved = $this->removeByValue($value);
+            $removed      = $removed || $valueRemoved;
         }
         return $removed;
     }
@@ -166,7 +199,7 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
         if (!$this->containsValue($value)) {
             return true;
         }
-        $key = $this->indexOf($value);
+        $key     = $this->indexOf($value);
         $removed = $this->remove($key);
         return $removed;
     }
@@ -193,10 +226,10 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
      * returns the first index of $value in the array or null
      *
      * @param $value
-     * @return null
+     * @return int|null
      */
-    public function indexOf($value) {
-        $array = $this->lastIndexOf($value);
+    public function indexOf($value): ?int {
+        $array  = $this->lastIndexOf($value);
         $return = $array === null ? null : $array[0];
         return $return;
     }
@@ -237,7 +270,7 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     /**
      * whether the array contains $key or not.
      *
-     * @param  int $key
+     * @param int $key
      * @return bool
      */
     public function containsKey(int $key): bool {
@@ -268,7 +301,8 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
         $removed = true;
         foreach ($this->array as $key => $item) {
             if ($key >= $start && $key <= $end) {
-                $removed &= $this->remove($key);
+                $keyRemoved = $this->remove($key);
+                $removed    = $removed && $keyRemoved;
             }
         }
         $this->array = array_values($this->array);
@@ -288,7 +322,7 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
                 $newArray[] = $value;
             }
         }
-        $result = $this->array !== $newArray;
+        $result      = $this->array !== $newArray;
         $this->array = $newArray;
         return $result;
     }
@@ -322,7 +356,12 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
             return $arrayList;
         }
         //TODO preserve keys?
-        $array = array_slice($this->array, $start, $end - $start, true);
+        $array = array_slice(
+            $this->array
+            , $start
+            , $end - $start + 1
+            , true
+        );
         $arrayList->addAllArray($array);
         return $arrayList;
     }
@@ -336,7 +375,8 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     public function addAllArray(array $array): bool {
         $added = true;
         foreach ($array as $value) {
-            $added &= $this->add($value);
+            $valueAdded = $this->add($value);
+            $added      = $added && $valueAdded;
         }
         return $added;
     }
@@ -378,7 +418,8 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     public function addAll(ArrayList $arrayList): bool {
         $added = false;
         foreach ($arrayList as $value) {
-            $added |= $this->add($value);
+            $valueAdded = $this->add($value);
+            $added      = $added || $valueAdded;
         }
         return $added;
     }
@@ -390,7 +431,7 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
      * valid values. Therefore, it has to be ensured that the iterator gets only
      * those values which are added by the user to the list.
      *
-     * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
+     * @link  http://php.net/manual/en/iteratoraggregate.getiterator.php
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
      * <b>Traversable</b>
      * @since 5.0.0
@@ -398,23 +439,6 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
     public function getIterator() {
         $array = array_slice($this->array, 0, $this->length(), true);
         return new ArrayIterator($array);
-    }
-
-    /**
-     * Specify data which should be serialized to JSON
-     *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    public function jsonSerialize() {
-        return [
-            "default_capacity" => ArrayList::DEFAULT_CAPACITY
-            , "size" => count($this->array)
-            , "length" => $this->length()
-            , "content" => $this->array,
-        ];
     }
 
     /**
@@ -446,11 +470,11 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
      */
     public function compareTo($object): int {
         if ($object instanceof ArrayList) {
-            if (count(array_diff($this->array, $object->array)) === 0) return 0;
-            if (count($this->array) < count($object->array)) return -1;
-            if (count($this->array) > count($object->array)) return 1;
+            if (count(array_diff($this->array, $object->array)) === 0) return IComparable::EQUAL;
+            if (count($this->array) < count($object->array)) return IComparable::IS_LESS;
+            if (count($this->array) > count($object->array)) return IComparable::IS_GREATER;
         }
-        return -1;
+        return IComparable::IS_LESS;
     }
 
     /**
@@ -463,9 +487,34 @@ class ArrayList implements IteratorAggregate, JsonSerializable, IComparable {
 
 
         $timSort = new TimSort();
-        $array = $timSort->sort($array);
-        $this->array = array_fill(0, self::DEFAULT_CAPACITY, null);
+        $array   = $timSort->sort($array);
+
+        $this->array = array_fill(
+            0
+            , $this->getCapacity()
+            , null
+        );
+
         $this->addAllArray($array);
         return true;
     }
+
+    /**
+     * Specify data which should be serialized to JSON
+     *
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize() {
+        return [
+            "default_capacity" => ArrayList::DEFAULT_CAPACITY
+            , "capacity"       => $this->getCapacity()
+            , "size"           => $this->size()
+            , "length"         => $this->length()
+            , "content"        => $this->array
+        ];
+    }
+
 }

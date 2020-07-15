@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar
+ * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +28,9 @@
 
 namespace doganoo\PHPAlgorithms\Common\Abstracts;
 
-
 use doganoo\PHPAlgorithms\Datastructure\Graph\Graph\Node;
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
+use function is_callable;
 
 /**
  * Class AbstractTraverse
@@ -35,13 +38,14 @@ use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
  * @package doganoo\PHPAlgorithms\common\Abstracts
  */
 abstract class AbstractGraphSearch {
+
     /** @var $callable callable|null */
     protected $callable = null;
     /** @var ArrayList|null $visited */
     protected $visited = null;
 
     public function __construct() {
-        $this->visited = new ArrayList();
+        $this->visited  = new ArrayList();
         $this->callable = function (Node $value) {
             echo $value->getValue();
             echo "\n";
@@ -60,7 +64,7 @@ abstract class AbstractGraphSearch {
     public function visit(Node $value) {
         $callable = $this->callable;
         if (null === $this->callable
-            && !\is_callable($this->callable)) {
+            && !is_callable($this->callable)) {
             $callable = function (Node $otherValue) {
                 echo $otherValue->getValue();
                 echo "\n";

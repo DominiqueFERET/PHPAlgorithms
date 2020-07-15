@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
@@ -30,6 +31,17 @@ namespace doganoo\PHPAlgorithms\Common\Interfaces;
  *
  * @package doganoo\PHPAlgorithms\Common\Interfaces
  */
-interface IComparable extends Comparable {
+interface IComparable {
+
+    public const IS_LESS    = -1;
+    public const EQUAL      = 0;
+    public const IS_GREATER = 1;
+
+    /**
+     * @param mixed $object
+     *
+     * @return int
+     */
+    public function compareTo($object): int;
 
 }

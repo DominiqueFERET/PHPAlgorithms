@@ -5,6 +5,8 @@ declare(strict_types=1);
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
  *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,16 +26,17 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-namespace doganoo\PHPAlgorithmsTest\Lists\ArrayLists;
+namespace doganoo\PHPAlgorithmsTest\Lists\ArrayList;
 
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class ArrayListTest extends TestCase {
+
     public function testAdd() {
         $arrayList = new ArrayList();
-        $added = $arrayList->add("value");
+        $added     = $arrayList->add("value");
         $this->assertTrue($added === true);
         $value = $arrayList->get(0);
         $this->assertTrue($value === "value");
@@ -174,7 +177,7 @@ class ArrayListTest extends TestCase {
         $arrayList->add("four");
 
         $subList = $arrayList->subList(1, 3);
-        $this->assertTrue($subList->size() === 2);
+        $this->assertTrue($subList->size() === 3);
         $this->assertTrue($subList->get(0) === "two");
         $this->assertTrue($subList->get(1) === "three");
         $this->assertTrue($arrayList->size() === 4);
@@ -194,10 +197,12 @@ class ArrayListTest extends TestCase {
 
     public function testSerialize() {
         $arrayList = new ArrayList();
-        $x = new class {
+        $x         = new class {
+
             public $id;
+
         };
-        $x->id = 1;
+        $x->id     = 1;
         $arrayList->add($x);
         $x->id = 2;
         $arrayList->add($x);

@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
  * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +28,31 @@
 
 namespace doganoo\PHPAlgorithms\Common\Abstracts;
 
-
 use doganoo\PHPAlgorithms\Algorithm\Various\Converter;
+use doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException;
 use doganoo\PHPAlgorithms\Common\Exception\InvalidGraphTypeException;
+use doganoo\PHPAlgorithms\common\Exception\InvalidKeyTypeException;
+use doganoo\PHPAlgorithms\common\Exception\UnsupportedKeyTypeException;
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
 use doganoo\PHPAlgorithms\Datastructure\Graph\Graph\Node;
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
-use doganoo\PHPAlgorithms\Datastructure\Maps\HashMap;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
 use doganoo\PHPAlgorithms\Datastructure\Stackqueue\Queue;
+use doganoo\PHPAlgorithms\Datastructure\Table\HashTable;
+use JsonSerializable;
 
 /**
  * Class AbstractGraph
  *
  * @package doganoo\PHPAlgorithms\common\Abstracts
  */
-abstract class AbstractGraph implements IComparable, \JsonSerializable {
-    public const DIRECTED_GRAPH = 1;
+abstract class AbstractGraph implements IComparable, JsonSerializable {
+
+    public const DIRECTED_GRAPH   = 1;
     public const UNDIRECTED_GRAPH = 2;
-    protected $nodeList = null;
-    private $type = 0;
-    private $converter = null;
+    protected $nodeList  = null;
+    private   $type      = 0;
+    private   $converter = null;
 
     /**
      * AbstractGraph constructor.
@@ -54,7 +61,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
      * @throws InvalidGraphTypeException
      */
     protected function __construct($type = self::DIRECTED_GRAPH) {
-        $this->nodeList = new ArrayList();
+        $this->nodeList  = new ArrayList();
         $this->converter = new Converter();
         if ($type === self::DIRECTED_GRAPH || $type === self::UNDIRECTED_GRAPH) {
             $this->type = $type;
@@ -90,7 +97,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
     /**
      * @param $object
      * @return int
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     public function compareTo($object): int {
         if ($object instanceof AbstractGraph) {
@@ -103,7 +110,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
 
     /**
      * @return Node|null
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     public function getRoot(): ?Node {
         return ($this->nodeList === null ||
@@ -114,7 +121,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
     /**
      * Specify data which should be serialized to JSON
      *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
@@ -122,23 +129,23 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
     public function jsonSerialize() {
         return [
             "node_list" => $this->nodeList
-            , "type" => $this->type,
+            , "type"    => $this->type,
         ];
     }
 
     /**
      * @param AbstractGraph $graph
      * @return AbstractGraph|null
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
-     * @throws \doganoo\PHPAlgorithms\common\Exception\InvalidKeyTypeException
-     * @throws \doganoo\PHPAlgorithms\common\Exception\UnsupportedKeyTypeException
+     * @throws IndexOutOfBoundsException
+     * @throws InvalidKeyTypeException
+     * @throws UnsupportedKeyTypeException
      */
     public function deepCopy(AbstractGraph $graph): ?AbstractGraph {
         $root = $graph->getRoot();
         if (null === $root) return null;
 
         $q = new Queue();
-        $m = new HashMap();
+        $m = new HashTable();
 
         $newRoot = new Node($root->getValue());
 
@@ -167,7 +174,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
                 }
             }
 
-            $nodeList = $this->converter->hashMapToArrayList($m);
+            $nodeList       = $this->converter->hashMapToArrayList($m);
             $this->nodeList = $nodeList;
             return $this;
         }
@@ -199,7 +206,7 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
     }
 
     /**
-     * @param Node $node
+     * @param Node      $node
      * @param ArrayList $v
      */
     private function flood(Node $node, ArrayList &$v): void {
@@ -209,5 +216,37 @@ abstract class AbstractGraph implements IComparable, \JsonSerializable {
         }
     }
 
+    /**
+     * Whether a connection between start and end exists
+     *
+     * @param Node $start
+     * @param Node $end
+     * @return bool
+     */
+    public function connectionExists(Node $start, Node $end): bool {
+        $v = new ArrayList();
+        $q = new Queue();
+
+        $q->enqueue($start);
+
+        while (false === $q->isEmpty()) {
+            /** @var Node $n */
+            $n = $q->dequeue();
+
+            /** @var Node $adjacent */
+            foreach ($n->getAdjacents() as $adjacent) {
+
+                if (true === $v->containsValue($adjacent)) continue;
+
+                if (Comparator::equals($n, $end)) return true;
+
+                $q->enqueue($n);
+                $v->add($n);
+
+            }
+        }
+
+        return false;
+    }
 
 }

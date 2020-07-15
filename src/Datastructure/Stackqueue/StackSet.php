@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar
+ * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
+ *
+ * @author Eugene Kirillov <eug.krlv@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,18 +28,21 @@
 
 namespace doganoo\PHPAlgorithms\Datastructure\Stackqueue;
 
+use doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException;
 use doganoo\PHPAlgorithms\Common\Interfaces\IComparable;
 use doganoo\PHPAlgorithms\Common\Util\Comparator;
-use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayLists\ArrayList;
+use doganoo\PHPAlgorithms\Datastructure\Lists\ArrayList\ArrayList;
+use JsonSerializable;
 
 /**
  * Class StackSet
  *
  * @package doganoo\PHPAlgorithms\Datastructure\Stackqueue
  */
-class StackSet implements IComparable, \JsonSerializable {
-    private $maxSize = 0;
-    private $counter = 0;
+class StackSet implements IComparable, JsonSerializable {
+
+    private $maxSize   = 0;
+    private $counter   = 0;
     private $stackList = null;
 
     /**
@@ -45,13 +51,13 @@ class StackSet implements IComparable, \JsonSerializable {
      * @param int $maxSize
      */
     public function __construct(int $maxSize = 128) {
-        $this->maxSize = $maxSize;
+        $this->maxSize   = $maxSize;
         $this->stackList = new ArrayList();
     }
 
     /**
      * @param $element
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     public function push($element) {
         $stack = $this->getLastStack();
@@ -60,7 +66,7 @@ class StackSet implements IComparable, \JsonSerializable {
 
     /**
      * @return Stack
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     private function getLastStack(): Stack {
         $modulo = $this->counter % $this->maxSize;
@@ -75,7 +81,7 @@ class StackSet implements IComparable, \JsonSerializable {
     /**
      * @param Stack $stack
      * @param       $element
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     private function addToStack(Stack $stack, $element) {
         $stack->push($element);
@@ -90,12 +96,12 @@ class StackSet implements IComparable, \JsonSerializable {
 
     /**
      * @return mixed|null
-     * @throws \doganoo\PHPAlgorithms\Common\Exception\IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException
      */
     public function pop() {
         $index = $this->stackList->length();
         /** @var Stack $stack */
-        $stack = $this->stackList->get($index - 1);
+        $stack   = $this->stackList->get($index - 1);
         $element = $stack->pop();
         $this->counter--;
         if (0 === $stack->size()) {
@@ -129,7 +135,7 @@ class StackSet implements IComparable, \JsonSerializable {
     /**
      * Specify data which should be serialized to JSON
      *
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
      * @return mixed data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      * @since 5.4.0
@@ -138,7 +144,8 @@ class StackSet implements IComparable, \JsonSerializable {
         return [
             "stack_list" => $this->stackList
             , "max_size" => $this->maxSize
-            , "counter" => $this->counter,
+            , "counter"  => $this->counter,
         ];
     }
+
 }
