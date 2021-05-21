@@ -1,10 +1,9 @@
 <?php
 declare(strict_types=1);
-
 /**
  * MIT License
  *
- * Copyright (c) 2018 Dogan Ucar
+ * Copyright (c) 2018 Dogan Ucar, <dogan@dogan-ucar.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,36 +24,10 @@ declare(strict_types=1);
  * SOFTWARE.
  */
 
-use doganoo\PHPAlgorithms\Datastructure\Graph\Tree\Trie\Trie;
+namespace doganoo\PHPAlgorithms\Common\Interfaces;
 
-/**
- * Class TrieTest
- */
-class TrieTest extends \PHPUnit\Framework\TestCase {
+interface IHashable {
 
-    /**
-     * tests inserting and searching
-     */
-    public function testAdd(): void {
-        $trie = new Trie();
-        $trie->insert("Test");
-        $found = $trie->search("Test");
-        $this->assertTrue($found === true);
-        $found = $trie->search("Te", true);
-        $this->assertTrue($found === true);
-    }
-
-    public function testWordCount(): void {
-        $this->markTestSkipped("need to repair :-(");
-        $trie = new Trie();
-        $trie->insert("this");
-        $trie->insert("is");
-        $trie->insert("a");
-        $trie->insert("very");
-        $trie->insert("long");
-        $trie->insert("word");
-
-        $this->assertTrue(6 === $trie->countWords());
-    }
+    public function getHash(): string;
 
 }

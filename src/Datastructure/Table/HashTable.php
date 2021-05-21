@@ -64,6 +64,9 @@ class HashTable extends AbstractTable implements JsonSerializable {
      */
     private $maxSize = 128;
 
+    /** @var array */
+    private $keySet = [];
+
     /**
      * HashMap constructor creates an empty array.
      */
@@ -89,8 +92,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
      * @throws UnsupportedKeyTypeException
      */
     public function addNode(Node $node): bool {
-        $added = $this->add($node->getKey(), $node->getValue());
-        return $added;
+        return $this->add($node->getKey(), $node->getValue());
     }
 
     /**
@@ -117,6 +119,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
         }
         $list->add($key, $value);
         $this->bucket[$arrayIndex] = $list;
+        $this->keySet[]            = $key;
         return true;
     }
 
@@ -143,9 +146,8 @@ class HashTable extends AbstractTable implements JsonSerializable {
          *
          * Doing this avoids hash collisions.
          */
-        $hash       = $this->getHash($key);
-        $arrayIndex = $this->getArrayIndex($hash);
-        return $arrayIndex;
+        $hash = $this->getHash($key);
+        return $this->getArrayIndex($hash);
     }
 
     /**
@@ -226,7 +228,6 @@ class HashTable extends AbstractTable implements JsonSerializable {
      * @return bool
      */
     public function containsValue($value): bool {
-
         /**
          * @var string           $arrayIndex
          * @var SinglyLinkedList $list
@@ -256,28 +257,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
      * @return bool
      */
     public function containsKey($key): bool {
-        /**
-         * @var string           $arrayIndex
-         * @var SinglyLinkedList $list
-         */
-        foreach ($this->bucket as $arrayIndex => $list) {
-            if (null === $list) {
-                continue;
-            }
-            /* $list is the first element in the bucket. The bucket
-             * can contain max $maxSize entries and each entry has zero
-             * or one nodes which can have zero, one or multiple
-             * successors.
-             */
-            if ($list->containsKey($key)) {
-                return true;
-            }
-        }
-        /*
-         * If no bucket contains the value then return false because
-         * the searched value is not in the list.
-         */
-        return false;
+        return true === in_array($key, $this->keySet);
     }
 
     /**
@@ -305,8 +285,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
             if (!$list->containsValue($value)) {
                 continue;
             }
-            $node = $list->getNodeByValue($value);
-            return $node;
+            return $list->getNodeByValue($value);
         }
         //return null if there is no value
         return null;
@@ -324,7 +303,6 @@ class HashTable extends AbstractTable implements JsonSerializable {
     public function remove($key): bool {
         //get the corresponding index to key
         $arrayIndex = $this->getBucketIndex($key);
-
         /*
          *if the array index is not available in the
          * bucket list, end the method and return true.
@@ -352,6 +330,9 @@ class HashTable extends AbstractTable implements JsonSerializable {
          */
         if ($list->size() == 1 && $head->getKey() === $key) {
             unset($this->bucket[$arrayIndex]);
+            foreach (array_keys($this->keySet, $key) as $keyKey) {
+                unset($this->keySet[$keyKey]);
+            }
             return true;
         }
         return $list->remove($key);
@@ -380,6 +361,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
 
     /**
      * returns the hash table as an array
+     *
      * @return array
      */
     public function toArray(): array {
@@ -399,20 +381,7 @@ class HashTable extends AbstractTable implements JsonSerializable {
      * @return array
      */
     public function keySet(): array {
-        $keySet = [];
-        /** @var SinglyLinkedList $list */
-        foreach ($this->bucket as $list) {
-            if (null === $list) {
-                continue;
-            }
-            /** @var Node $head */
-            $head = $list->getHead();
-            while ($head !== null) {
-                $keySet[] = $head->getKey();
-                $head     = $head->getNext();
-            }
-        }
-        return $keySet;
+        return array_values($this->keySet);
     }
 
     /**
@@ -443,16 +412,17 @@ class HashTable extends AbstractTable implements JsonSerializable {
          * the list is requested from the array based on
          * the array index hash.
          */
-        /** @var SinglyLinkedList $list */
         if (!isset($this->bucket[$arrayIndex])) {
             return null;
         }
+        /** @var AbstractLinkedList $list */
         $list = $this->bucket[$arrayIndex];
-        if (!$list->containsKey($key)) {
+
+        if (!$list instanceof AbstractLinkedList) {
             return null;
         }
-        $node = $list->getNodeByKey($key);
-        return $node;
+
+        return $list->getNodeByKey($key);
     }
 
     /**
@@ -466,7 +436,8 @@ class HashTable extends AbstractTable implements JsonSerializable {
     public function jsonSerialize() {
         return [
             "buckets"    => $this->bucket
-            , "max_size" => $this->maxSize,
+            , "max_size" => $this->maxSize
+            , "key_set"  => $this->keySet
         ];
     }
 
